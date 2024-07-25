@@ -1,34 +1,42 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocument } from '@aws-sdk/2'
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
+import { getUserId } from '../utils.mjs'
 
 const dynamoDbClient = DynamoDBDocument.from(new DynamoDB())
 
 const todosTable = process.env.TODOS_TABLE
 
 export async function handler(event) {
-  console.log('Processing update event: ', event)
-  const todoId = event.pathParameters.todoId
-  const updatedTodo = JSON.parse(event.body)
-  
-  // Update a TODO item with the provided id using values in the "updatedTodo" object
+  console.log('Processing update event', event)
 
-  const updateItem = {
-    id: todoId,
-    ...updatedTodo
-  }
+  const todoPayload = JSON.parse(event.body)
+  const todoId = event.pathParameters.groupId
+  const userId = getUserId(event)
 
-  await dynamoDbClient.update({
+  const responseUpdate = await dynamoDbClient.update({
     TableName: todosTable,
-    Item: updateItem
+    Key: {
+      todoId,
+      userId
+    },
+    UpdateExpression: 'set #name = :name, dueDate=:dueDate, done=:done',
+    ExpressionAttributeValues: {
+      ':name': todoPayload.name,
+      ':dueDate': todoPayload.dueDate,
+      ':done': todoPayload.done
+    },
+    ExpressionAttributeNames: { '#name': 'name' },
+    ReturnValues: 'UPDATED_NEW'
   })
 
   return {
-    statusCode: 201,
+    statusCode: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      newItem: updateItem
+      responseUpdate
     })
   }
 }
