@@ -16,6 +16,8 @@ provider:
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     IMAGES_TABLE: Images-${self:provider.stage} 
     IMAGE_ID_INDEX: ImageIdIndex
+    TODO_S3_BUCKET: chaudm-bucket-todo-682128318891-dev
+    SIGNED_URL_EXPIRATION: 300
 
 functions:
 
@@ -75,13 +77,19 @@ functions:
           - dynamodb:DeleteItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
-  # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
       - http:
           method: post
           path: todos/{todoId}/attachment
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
 resources:
   Resources:
@@ -111,3 +119,41 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+
+    AttachmentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.TODO_S3_BUCKET}
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerEnforced
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedOrigins:
+                - "*"
+              AllowedMethods:
+                - GET
+                - POST
+                - PUT
+                - HEAD
+                - DELETE
+              MaxAge: 3000
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref AttachmentsBucket
+        PolicyDocument:
+          Id: MyBucketPolicy
+          Statement:
+            - Effect: Allow
+              Action: "*"
+              Resource: 'arn:aws:s3:::${self:provider.environment.TODO_S3_BUCKET}/'
+              Principal: "*"
