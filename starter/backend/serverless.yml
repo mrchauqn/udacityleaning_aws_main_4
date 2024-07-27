@@ -1,5 +1,3 @@
-org: chaudm
-app: serverless-todo-app
 service: serverless-todo-app
 
 plugins:
@@ -31,6 +29,7 @@ functions:
           method: get
           path: todos
           cors: true
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
