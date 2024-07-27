@@ -1,10 +1,5 @@
-import {DynamoDB} from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
 import { getUserId } from '../utils.mjs'
-
-const dynamoDbClient = DynamoDBDocument.from(new DynamoDB())
-
-const todosTable = process.env.TODOS_TABLE
+import { deleteTodo } from '../../businessLogic/todos.mjs'
 
 export async function handler(event) {
   console.log('Processing delete event', event)
@@ -12,13 +7,7 @@ export async function handler(event) {
   const todoId = event.pathParameters.todoId
   const userId = getUserId(event)
 
-  const responseDelete = await dynamoDbClient.delete({
-    TableName: todosTable,
-    Key: {
-      todoId,
-      userId
-    }
-  })
+  const responseDelete = await deleteTodo(todoId, userId)
 
   return {
     statusCode: 200,

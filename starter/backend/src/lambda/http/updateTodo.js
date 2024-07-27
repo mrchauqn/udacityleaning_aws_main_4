@@ -1,33 +1,13 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
 import { getUserId } from '../utils.mjs'
-
-const dynamoDbClient = DynamoDBDocument.from(new DynamoDB())
-
-const todosTable = process.env.TODOS_TABLE
+import { updateTodo } from '../../businessLogic/todos.mjs'
 
 export async function handler(event) {
   console.log('Processing update event', event)
 
   const todoPayload = JSON.parse(event.body)
-  const todoId = event.pathParameters.groupId
   const userId = getUserId(event)
 
-  const responseUpdate = await dynamoDbClient.update({
-    TableName: todosTable,
-    Key: {
-      todoId,
-      userId
-    },
-    UpdateExpression: 'set #name = :name, dueDate=:dueDate, done=:done',
-    ExpressionAttributeValues: {
-      ':name': todoPayload.name,
-      ':dueDate': todoPayload.dueDate,
-      ':done': todoPayload.done
-    },
-    ExpressionAttributeNames: { '#name': 'name' },
-    ReturnValues: 'UPDATED_NEW'
-  })
+  const updateResponse = await updateTodo(todoPayload, userId)
 
   return {
     statusCode: 200,
@@ -36,7 +16,7 @@ export async function handler(event) {
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      responseUpdate
+      responseUpdate: updateResponse
     })
   }
 }

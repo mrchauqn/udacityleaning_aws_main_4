@@ -4,8 +4,8 @@ import { createLogger } from '../../utils/logger.mjs'
 
 const logger = createLogger('auth')
 
-const jwksUrl =
-  'https://dev-4ev6v1mxu8lgy6uv.us.auth0.com/.well-known/jwks.json'
+// eslint-disable-next-line no-undef
+const jwksUrl = process.env.AUTH0_JWKS_URL
 
 export async function handler(event) {
   try {
@@ -46,6 +46,8 @@ export async function handler(event) {
 async function verifyToken(authHeader) {
   const token = getToken(authHeader)
   const jwt = jsonwebtoken.decode(token, { complete: true })
+  const kid = jwt.header.kid
+  let cert
 
   try {
     if (!jwt) {
@@ -62,10 +64,10 @@ async function verifyToken(authHeader) {
 
     cert = `-----BEGIN CERTIFICATE-----\n${signingKey.x5c[0]}\n-----END CERTIFICATE-----`
   } catch (e) {
-    logger.error('Error verify token')
+    logger.error('Error verify token: ', e.message)
   }
 
-  return verify(token, cert, { algorithms: ['RS256'] })
+  return jsonwebtoken.verify(token, cert, { algorithms: ['RS256'] })
 }
 
 

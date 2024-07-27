@@ -16,6 +16,7 @@ provider:
     IMAGE_ID_INDEX: ImageIdIndex
     TODO_S3_BUCKET: chaudm-bucket1-todo-682128318891-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
+    AUTH0_JWKS_URL: https://dev-4ev6v1mxu8lgy6uv.us.auth0.com/.well-known/jwks.json
 
 functions:
 
