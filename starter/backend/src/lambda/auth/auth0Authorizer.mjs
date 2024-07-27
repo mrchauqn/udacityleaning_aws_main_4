@@ -10,6 +10,7 @@ const jwksUrl = process.env.AUTH0_JWKS_URL
 export async function handler(event) {
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
+    logger.info('User was authorized', jwtToken)
 
     return {
       principalId: jwtToken.sub,
@@ -55,10 +56,6 @@ async function verifyToken(authHeader) {
     }
 
     const jwks = await Axios.get(jwksUrl)
-
-    if (!signingKey) {
-      throw new Error(`No signing key matching the kid '${kid}' was found`)
-    }
 
     const signingKey = jwks.data.keys.find((k) => k.kid === kid)
 
