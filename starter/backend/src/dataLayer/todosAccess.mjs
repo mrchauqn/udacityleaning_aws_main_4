@@ -2,12 +2,11 @@ import AWSXRay from 'aws-xray-sdk-core'
 import { DynamoDB } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 export class TodosAccess {
   constructor(
     documentClient = AWSXRay.captureAWSv3Client(new DynamoDB()),
-    todoTable = process.env.TODO_TABLE,
+    todoTable = process.env.TODOS_TABLE,
     s3Client = new S3Client()
   ) {
     this.dynamoDbClient = DynamoDBDocument.from(documentClient)
