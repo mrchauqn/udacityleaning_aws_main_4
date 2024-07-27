@@ -5,9 +5,10 @@ export async function handler(event) {
   console.log('Processing update event', event)
 
   const todoPayload = JSON.parse(event.body)
+  const todoId = event.pathParameters.todoId
   const userId = getUserId(event)
 
-  const updateResponse = await updateTodo(todoPayload, userId)
+  const updateResponse = await updateTodo(todoPayload, todoId, userId)
 
   return {
     statusCode: 200,

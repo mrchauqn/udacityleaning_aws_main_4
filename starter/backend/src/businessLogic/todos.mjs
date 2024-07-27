@@ -5,7 +5,7 @@ const todoAccess = new TodosAccess()
 
 export async function createTodo(newTodo, userId) {
   const todoId = uuidv4()
-  const { name, dueDate } = JSON.parse(newTodo)
+  const { name, dueDate } = newTodo
 
   const newItem = {
     todoId,
@@ -20,9 +20,7 @@ export async function createTodo(newTodo, userId) {
   return await todoAccess.createTodo(newItem)
 }
 
-export async function updateTodo(updateTodo, userId) {
-  const todoId = event.pathParameters.groupId
-
+export async function updateTodo(updateTodo, todoId, userId) {
   return await todoAccess.updateTodo(userId, todoId, updateTodo)
 }
 

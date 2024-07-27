@@ -17,12 +17,10 @@ export class TodosAccess {
   }
 
   async createTodo(todo) {
-    await this.dynamoDbClient
-      .put({
-        TableName: this.todoTable,
-        Item: todo
-      })
-      .promise()
+    await this.dynamoDbClient.put({
+      TableName: this.todoTable,
+      Item: todo
+    })
 
     return todo
   }
@@ -30,23 +28,21 @@ export class TodosAccess {
   async updateTodo(userId, todoId, updatePayload) {
     console.log(`Update todo ${todoId} for user ${userId}`)
 
-    const updatedTodo = await this.dynamoDbClient
-      .update({
-        TableName: this.todoTable,
-        Key: {
-          todoId,
-          userId
-        },
-        UpdateExpression: 'set #name = :name, dueDate=:dueDate, done=:done',
-        ExpressionAttributeValues: {
-          ':name': updatePayload.name,
-          ':dueDate': updatePayload.dueDate,
-          ':done': updatePayload.done
-        },
-        ExpressionAttributeNames: { '#name': 'name' },
-        ReturnValues: 'UPDATED_NEW'
-      })
-      .promise()
+    const updatedTodo = await this.dynamoDbClient.update({
+      TableName: this.todoTable,
+      Key: {
+        todoId,
+        userId
+      },
+      UpdateExpression: 'set #name = :name, dueDate=:dueDate, done=:done',
+      ExpressionAttributeValues: {
+        ':name': updatePayload.name,
+        ':dueDate': updatePayload.dueDate,
+        ':done': updatePayload.done
+      },
+      ExpressionAttributeNames: { '#name': 'name' },
+      ReturnValues: 'UPDATED_NEW'
+    })
 
     return updatedTodo
   }
@@ -54,44 +50,39 @@ export class TodosAccess {
   async getTodos(userId) {
     console.log(`Get all todos of user ${userId}`)
 
-    const todos = await this.dynamoDbClient
-      .query({
-        TableName: this.todoTable,
-        KeyConditionExpression: 'userId = :userId',
-        ExpressionAttributeValues: {
-          ':userId': userId
-        }
-      })
-      .promise()
+    const todos = await this.dynamoDbClient.query({
+      TableName: this.todoTable,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId
+      }
+    })
 
-    return todos
+    console.log('todos', todos)
+    return todos.Items
   }
 
   async deleteTodoAttachment(todoId) {
     console.log(`Delete attachment for todo id ${todoId}`)
 
-    await this.s3Client
-      .deleteObject({
-        // eslint-disable-next-line no-undef
-        Bucket: process.env.TODO_S3_BUCKET,
-        Key: todoId
-      })
-      .promise()
+    await this.s3Client.deleteObject({
+      // eslint-disable-next-line no-undef
+      Bucket: process.env.TODO_S3_BUCKET,
+      Key: todoId
+    })
   }
 
   async deleteTodo(todoId, userId) {
     console.log(`Delete todo id ${todoId}`)
 
-    const deletedTodo = await this.dynamoDbClient
-      .delete({
-        TableName: this.todoTable,
-        Key: {
-          todoId,
-          userId
-        },
-        ReturnValues: 'ALL_OLD'
-      })
-      .promise()
+    const deletedTodo = await this.dynamoDbClient.delete({
+      TableName: this.todoTable,
+      Key: {
+        todoId,
+        userId
+      },
+      ReturnValues: 'ALL_OLD'
+    })
 
     return deletedTodo
   }
@@ -112,21 +103,19 @@ export class TodosAccess {
     })
 
     // === Update DB data ===
-    await this.dynamoDbClient
-      .update({
-        TableName: this.todoTable,
-        Key: {
-          todoId,
-          userId
-        },
-        UpdateExpression: 'set attachmentUrl=:attachmentUrl',
-        ExpressionAttributeValues: {
-          // eslint-disable-next-line no-undef
-          ':attachmentUrl': `https://${process.env.TODO_S3_BUCKET}.s3.amazonaws.com/${todoId}`
-        },
-        ReturnValues: 'UPDATED_NEW'
-      })
-      .promise()
+    await this.dynamoDbClient.update({
+      TableName: this.todoTable,
+      Key: {
+        todoId,
+        userId
+      },
+      UpdateExpression: 'set attachmentUrl=:attachmentUrl',
+      ExpressionAttributeValues: {
+        // eslint-disable-next-line no-undef
+        ':attachmentUrl': `https://${process.env.TODO_S3_BUCKET}.s3.amazonaws.com/${todoId}`
+      },
+      ReturnValues: 'UPDATED_NEW'
+    })
 
     return uploadUrl
   }

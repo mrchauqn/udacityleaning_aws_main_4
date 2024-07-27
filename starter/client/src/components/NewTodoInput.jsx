@@ -11,6 +11,11 @@ export function NewTodoInput({ onNewTodo }) {
 
   const onTodoCreate = async (event) => {
     try {
+      if (newTodoName.length < 3) {
+        alert('Please input minimum 3 character for todo name')
+        return
+      }
+
       const accessToken = await getAccessTokenSilently({
         audience: `https://dev-4ev6v1mxu8lgy6uv.us.auth0.com/api/v2/`,
         scope: 'write:todos'

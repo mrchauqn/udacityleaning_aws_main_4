@@ -6,7 +6,7 @@ export async function handler(event) {
 
   const userId = getUserId(event)
 
-  const items = await getTodos.getTodos(userId)
+  const items = await getTodos(userId)
 
   return {
     statusCode: 200,

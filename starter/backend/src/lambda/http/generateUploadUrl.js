@@ -8,7 +8,7 @@ export async function handler(event) {
   console.log('Processing upload url event: ', event)
 
   const todoId = event.pathParameters.todoId
-  const userId = getUserId()
+  const userId = getUserId(event)
 
   const responseUrl = await getUploadUrl(todoId, userId)
 
@@ -24,7 +24,7 @@ export async function handler(event) {
       'Access-Control-Allow-Credentials': true
     },
     body: JSON.stringify({
-      responseUrl
+      uploadUrl: responseUrl
     })
   }
 }
